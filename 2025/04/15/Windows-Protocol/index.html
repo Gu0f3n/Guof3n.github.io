@@ -1,0 +1,452 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Windows Protocol | Gu0f3n's blog</title><meta name="author" content="Gu0f3n"><meta name="copyright" content="Gu0f3n"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="kerberos在Kerberos协议中主要是有三个角色的存在：  访问服务的Client(以下表述为Client 或者用户)  提供服务的Server(以下表述为服务)  KDC（Key Distribution Center）密钥分发中心  步骤  1. AS_REQ: Client向KDC发起AS_REQ,请求凭据是Client hash加密的时间戳 2. AS_REP: KDC使用Clie">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Windows Protocol">
+<meta property="og:url" content="https://gu0f3n.github.io/2025/04/15/Windows-Protocol/index.html">
+<meta property="og:site_name" content="Gu0f3n&#39;s blog">
+<meta property="og:description" content="kerberos在Kerberos协议中主要是有三个角色的存在：  访问服务的Client(以下表述为Client 或者用户)  提供服务的Server(以下表述为服务)  KDC（Key Distribution Center）密钥分发中心  步骤  1. AS_REQ: Client向KDC发起AS_REQ,请求凭据是Client hash加密的时间戳 2. AS_REP: KDC使用Clie">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Gu0f3n/img/mian/6401.jpg">
+<meta property="article:published_time" content="2025-04-15T11:18:17.000Z">
+<meta property="article:modified_time" content="2025-05-12T11:33:18.098Z">
+<meta property="article:author" content="Gu0f3n">
+<meta property="article:tag" content="network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Gu0f3n/img/mian/6401.jpg"><link rel="shortcut icon" href="/img/1.png"><link rel="canonical" href="https://gu0f3n.github.io/2025/04/15/Windows-Protocol/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.14.0-b3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>(()=>{
+      const saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+      
+      window.btf = {
+        saveToLocal: saveToLocal,
+        getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = url
+          script.async = true
+          script.onerror = reject
+          script.onload = script.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            script.onload = script.onreadystatechange = null
+            resolve()
+          }
+
+          Object.keys(attr).forEach(key => {
+            script.setAttribute(key, attr[key])
+          })
+
+          document.head.appendChild(script)
+        }),
+
+        getCSS: (url, id = false) => new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = url
+          if (id) link.id = id
+          link.onerror = reject
+          link.onload = link.onreadystatechange = function() {
+            const loadState = this.readyState
+            if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+            link.onload = link.onreadystatechange = null
+            resolve()
+          }
+          document.head.appendChild(link)
+        }),
+
+        addGlobalFn: (key, fn, name = false, parent = window) => {
+          const pjaxEnable = true
+          if (!pjaxEnable && key.startsWith('pjax')) return
+
+          const globalFn = parent.globalFn || {}
+          const keyObj = globalFn[key] || {}
+    
+          if (name && keyObj[name]) return
+    
+          name = name || Object.keys(keyObj).length
+          keyObj[name] = fn
+          globalFn[key] = keyObj
+          parent.globalFn = globalFn
+        }
+      }
+    
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+      
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })()</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体中文","cht_to_chs":"你已切换为简体中文","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Windows Protocol',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-05-12 19:33:18'
+}</script><link rel="stylesheet" href="/css/1.css?1"><link rel="stylesheet" href="/css/2.css?1"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Gu0f3n's blog" type="application/atom+xml">
+</head><body><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><div class="loading-img"></div><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-minimal.min.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/1.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://raw.githubusercontent.com/Gu0f3n/img/mian/6401.jpg')"><nav id="nav"><div id="nav-group"><span id="blog-info"><a href="/" title="回到主页"><span class="site-name"></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw &lt;i class=&quot;fa-light fa-igloo&quot;&gt;&lt;/i&gt;"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa-sharp-duotone fa-solid fa-link"></i><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa-solid fa-heart-pulse"></i><span> 关于我</span></a></div></div></div><div id="nav-right"><div id="travellings"><a class="site-page" target="_blank" rel="noopener" href="https://travellings.cn/go.html" title="随机前往一个开往项目网站"><i class="iconfont icat-subway"></i></a></div><div id="random"><a class="site-page" href="javascript:toRandomPost()" title="随机前往一个文章"><i class="iconfont icat-random"></i></a></div><div id="search-button"><a class="site-page social-icon search"><i class="iconfont icat-search"></i></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="搜索本站文章"><i class="iconfont icat-bars"></i></a></div></div></div></nav><div id="post-info"><h1 class="post-title">Windows Protocol</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-04-15T11:18:17.000Z" title="发表于 2025-04-15 19:18:17">2025-04-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-05-12T11:33:18.098Z" title="更新于 2025-05-12 19:33:18">2025-05-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/network/">network</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Windows Protocol"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="kerberos"><a href="#kerberos" class="headerlink" title="kerberos"></a>kerberos</h1><p>在Kerberos协议中主要是有三个角色的存在：</p>
+<ol>
+<li><p>访问服务的Client(以下表述为Client 或者用户)</p>
+</li>
+<li><p>提供服务的Server(以下表述为服务)</p>
+</li>
+<li><p>KDC（Key Distribution Center）密钥分发中心 </p>
+<p>步骤</p>
+<ol>
+<li><pre><code>1. AS_REQ: Client向KDC发起AS_REQ,请求凭据是Client hash加密的时间戳
+2. AS_REP: KDC使用Client hash进行解密，如果结果正确就返回用krbtgt hash加密的TGT票据，TGT里面包含PAC,PAC包含Client的sid，Client所在的组。
+3. TGS_REQ: Client凭借TGT票据向KDC发起针对特定服务的TGS_REQ请求
+4. TGS_REP: KDC使用krbtgt hash进行解密，如果结果正确，就返回用服务hash 加密的TGS票据(这一步不管用户有没有访问服务的权限，只要TGT正确，就返回TGS票据)
+5. AP_REQ: Client拿着TGS票据去请求服务
+6. AP_REP: 服务使用自己的hash解密TGS票据。如果解密正确，就拿着PAC去KDC那边问Client有没有访问权限，域控解密PAC。获取Client的sid，以及所在的组，再根据该服务的ACL，判断Client是否有访问服务的权限。
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">      </span><br><span class="line"></span><br><span class="line">## AS_REQ &amp; AS_REP</span><br><span class="line"></span><br><span class="line">### AS_REQ</span><br><span class="line"></span><br><span class="line">###  pvno</span><br><span class="line"></span><br><span class="line">kerberos 版本号</span><br><span class="line"></span><br><span class="line">###  msg-type</span><br><span class="line"></span><br><span class="line">类型，AS_REQ对应的就是KRB_AS_REQ(0x0a)</span><br><span class="line"></span><br><span class="line">###  PA_DATA</span><br><span class="line"></span><br><span class="line">主要是一些认证信息。一个列表，包含若干个认证消息用于认证，我们也可以Authenticator。每个认证消息有type和value。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">在AS_REQ主要用到的是时间戳（ENC_TIMESTAMP）和PA_PAC_REQUEST</span><br><span class="line"></span><br><span class="line">ENC_TIMESTAMP </span><br><span class="line"></span><br><span class="line">他是用于预认证，通过用户的hash加密时间戳作为值发送给AS,AS第一时间找到AD确认有此用户的hash，然后会对这个hash进行解密，且时间戳在一定范围内，即可通过认证</span><br><span class="line"></span><br><span class="line">PA_PAC_REQUEST</span><br><span class="line"></span><br><span class="line">启用PAC支持的扩展PAC（Privilege Attribute Certificate）PA_PAC_REQUEST是Kerberos协议中的一个预认证选项，用于请求在TGT票据的PAC（特权属性证书）中添加PAC_REQUESTOR结构体，该结构体记录了原始请求者的身份标识（SID），以防止攻击者伪造黄金票据</span><br><span class="line"></span><br><span class="line">### REQ_BODY</span><br><span class="line"></span><br><span class="line">cname 客户端的名字</span><br><span class="line"></span><br><span class="line">- ```</span><br><span class="line">  PrincipalName 类型。PrincipalName包含type和value。</span><br><span class="line">  </span><br><span class="line">  - KRB_NT_PRINCIPAL = 1 means just the name of the principal 如dailker</span><br><span class="line">  - KRB_NT_SRV_INST = 2 service and other unique instance (krbtgt) 如krbtgt，cifs</span><br><span class="line">  - KRB_NT_ENTERPRISE_PRINCIPAL = 10 如 user@domain.com</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ol>
+</li>
+</ol>
+<p>sname 服务段名字</p>
+<p>PrincipalName 类型</p>
+<p>在AS_REQ里面sname是krbtgt，类型是KRB_NT_SRV_INST</p>
+<ul>
+<li><p>realm</p>
+<p>域名</p>
+</li>
+<li><p>from</p>
+<p>发送时间</p>
+</li>
+<li><p>till</p>
+<p>到期时间，rubeus和kekeo都是20370913024805Z，这个可以作为<code>特征</code>来检测工具。</p>
+</li>
+<li><p>nonce</p>
+<p>随机生成的一个数kekeo&#x2F;mimikatz nonce是12381973，rubeus nonce是1818848256，这个也可以用来作为<code>特征</code>检测工具。</p>
+<h2 id="AS-REP"><a href="#AS-REP" class="headerlink" title="AS_REP"></a>AS_REP</h2></li>
+</ul>
+<h3 id="1-msg-type"><a href="#1-msg-type" class="headerlink" title="1. msg-type"></a>1. msg-type</h3><p>AS_REQ的响应body对应的就是KRB_AS_REP(0x0b)</p>
+<h3 id="2-crealm"><a href="#2-crealm" class="headerlink" title="2. crealm"></a>2. crealm</h3><p>域名</p>
+<h3 id="3-cname"><a href="#3-cname" class="headerlink" title="3. cname"></a>3. cname</h3><p>用户名</p>
+<h3 id="4-ticket"><a href="#4-ticket" class="headerlink" title="4. ticket"></a>4. ticket</h3><p>这个ticket用于TGS_REQ的认证。是加密的，用户不可读取里面的内容。在AS_REQ请求里面是，是使用krbtgt的hash进行加密的，因此如果我们拥有krbtgt的hash就可以自己制作一个ticket，既黄金票据。</p>
+<h3 id="5-enc-part"><a href="#5-enc-part" class="headerlink" title="5. enc_part"></a>5. enc_part</h3><p>这部分是可以解密的，key是用户hash，解密后得到Encryptionkey，Encryptionkey里面最重要的字段是session key，作为下阶段的认证密钥</p>
+<h2 id="TGT"><a href="#TGT" class="headerlink" title="TGT"></a>TGT</h2><p>凭据里面最核心的东西是session-key和加密的ticket。</p>
+<h2 id="相关安全问题"><a href="#相关安全问题" class="headerlink" title="相关安全问题"></a>相关安全问题</h2><h3 id="哈希传递攻击Pass-The-Hash-Key"><a href="#哈希传递攻击Pass-The-Hash-Key" class="headerlink" title="哈希传递攻击Pass The Hash&#x2F;Key"></a>哈希传递攻击Pass The Hash&#x2F;Key</h3><p>一句话解释下就是说在登录的时候进行验证拿windows举例 NTML只看你的HASH,不认你的明文密码，那么攻击者只要拿到HASH即可登录验证成功，其他操作系统也是可以但是Windows系统是最好拿的，为什么呢？因为HASH存储在各个地方比如说LSASS（电脑内存里），SAM系统文件,域控的数据库当中（ntds.dit），并且只要你不改密码 他就长期有效，并且再安装域环境的时候，使用都是相同管理员的相同密码，在域中，若域管理员登录用与管理员账户登录过某台主机，则HASH就会被记录在登录过的主机中，我们就有机会获得其中的hash,进行对相同域的其他主机的一个横向渗透，如果在不支持rc4加密方式的时候，就可以使用ptk（是攻击者利用AES加密密钥直接登录其他系统）</p>
+<h3 id="用户名枚举"><a href="#用户名枚举" class="headerlink" title="用户名枚举"></a>用户名枚举</h3><p>就是根据用户名存在和不存在返回的包的清苦按来进行判断用户名的存在，如果用户名存在但是密码错误返回KDC_ERR_PREAUTH_FAILED，如果用户名不存在就会返回KDC_ERR_C_PRINCIPAL_UNKNOWN，那么攻击者就可以通过改变cname的值进行用户名枚举，在域内没有域账号的情况下进行枚举，有账号的情况下可以直接进行LDAP查询即可</p>
+<h3 id="Password-Spraying"><a href="#Password-Spraying" class="headerlink" title="Password Spraying"></a>Password Spraying</h3><p>同样上面讲的密码错误的情况下会返回KDC_ERR_PREAUTH_FAILED，通过脚本可以对弱密码进行一个爆破，但是在实践中，许多渗透测试人员和攻击者通常都会使用一种被称为“密码喷洒（Password Spraying）”的技术来进行测试和攻击因为针对同一个用户的连续密码猜测会导致帐户被锁定。所以只有对所有用户同时执行特定的密码登录尝试，才能增加破解的概率，消除帐户被锁定的概率。普通的爆破就是用户名固定，爆破密码，但是密码喷洒，是用固定的密码去跑用户名。</p>
+<h3 id="AS-REPRoasting"><a href="#AS-REPRoasting" class="headerlink" title="AS-REPRoasting"></a>AS-REPRoasting</h3><p>PA_DATA这个字段的值是可选的，如果不填写padata，意思就是想让KDC不经过认证将这个账户（administrator）的TGT返回，即使没有提供账户密码</p>
+<p>这里漏洞的关键就是管理员关闭了预认证的这个选项，那么攻击者只要扫描域内所有用户哪些用户没有启动域认证的选项，然后像域控制器的88端口发送AS_REQ请求提取 <strong>enc-part 下的 cipher 字段</strong>。这部分是用用户密码哈希加密的会话密钥将提取的 cipher 值拼接成 **<code>Kerberos 5 AS-REP etype 23</code>**（Hashcat 的 18200 模式专用格式），接着通过攻击例如hashcat进行离线爆破</p>
+<h3 id="黄金票据"><a href="#黄金票据" class="headerlink" title="黄金票据"></a>黄金票据</h3><p><strong>黄金票据是伪造票据授予票据（TGT），也被称为认证票据</strong>在AS_REP里面的ticket的encpart是使用krbtgt的hash进行加密的，如果我们拥有krbtgt的hash，就可以给我们自己签发任意用户的TGT票据，这个票据也被称为黄金票据。</p>
+<h2 id="TGS-REQ-TGS-REP"><a href="#TGS-REQ-TGS-REP" class="headerlink" title="TGS_REQ &amp; TGS_REP"></a>TGS_REQ &amp; TGS_REP</h2><h2 id="TGS-REQ"><a href="#TGS-REQ" class="headerlink" title="TGS_REQ"></a>TGS_REQ</h2><h3 id="1-msg-type-1"><a href="#1-msg-type-1" class="headerlink" title="1. msg-type"></a>1. msg-type</h3><p>类型，TGS_REQ对应的就是KRB_TGS_REQ(0x0c)</p>
+<h3 id="2-PA-DATA"><a href="#2-PA-DATA" class="headerlink" title="2. PA-DATA"></a>2. PA-DATA</h3><p>正常的TGS_REQ的请求需要用到有</p>
+<ul>
+<li>AP_REQ</li>
+</ul>
+<p>这个是TGS_REQ必须携带的部分，这部分会携带AS_REP里面获取到的TGT票据，就放在这个结构体里面。</p>
+<p>KDC校验TGT票据，如果票据正确，就返回TGS票据。</p>
+<p>PA_FOR_USER</p>
+<p>类型是S4U2SELF</p>
+<p>值是一个唯一的标识符，该标识符指示用户的身份。该唯一标识符由用户名和域名组成。</p>
+<p>S4U2proxy 必须扩展PA_FOR_USER结构，指定服务代表某个用户(图片里面是administrator)去请求针对服务自身的kerberos服务票据。</p>
+<p>PA_PAC_OPTIONS</p>
+<p>类型是 PA_PAC_OPTIONS</p>
+<p>值是以下flag的组合</p>
+<p>– Claims(0)</p>
+<p>– Branch Aware(1)</p>
+<p>– Forward to Full DC(2)</p>
+<p>– Resource-based Constrained Delegation (3)</p>
+<p>微软的<a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-sfu/aeecfd82-a5e4-474c-92ab-8df9022cf955">MS-SFU 2.2.5</a>， S4U2proxy 必须扩展PA-PAC-OPTIONS结构。</p>
+<p>如果是基于资源的约束委派，就需要指定Resource-based Constrained Delegation位。</p>
+<h3 id="REQ-BODY"><a href="#REQ-BODY" class="headerlink" title="REQ_BODY"></a>REQ_BODY</h3><p>sname</p>
+<p>这个是要请求的服务，TGS_REP获得的ticket是用该服务用户的hash进行加密的。有个比较有意思的特性是，如果指定的服务是krbtgt，那么拿到的TGS票据是可以当做TGT票据用的。</p>
+<p>附加票据，在S4U2proxy请求里面，既需要正常的TGT，也需要S4U2self阶段获取到的TGS，那么这个TGS就添加到AddtionTicket里面。</p>
+<h2 id="TGS-REP"><a href="#TGS-REP" class="headerlink" title="TGS_REP"></a>TGS_REP</h2><h3 id="1-msg-type-2"><a href="#1-msg-type-2" class="headerlink" title="1. msg-type"></a>1. msg-type</h3><p>AS_REQ的响应body对应的就是KRB_TGS_REQ(0x0d)</p>
+<h3 id="2-ticket"><a href="#2-ticket" class="headerlink" title="2. ticket"></a>2. ticket</h3><p>这个ticket用于AP_REQ的认证。其中里面的enc_part是加密的，用户不可读取里面的内容。在AS_REQ请求里面是，是使用krbtgt的hash进行加密的，而在TGS_REQ里面是使用要请求的服务的hash加密的。因此如果我们拥有服务的hash就可以自己制作一个ticket，既白银票据。</p>
+<h3 id="3-enc-part"><a href="#3-enc-part" class="headerlink" title="3.enc_part"></a>3.enc_part</h3><p>这部分是可以解密的，key是上一轮AS_REP里面返回的session_key,也就是导入凭据里面的 session_key，解密后得到encryptionkey，encryptionkey这个结构里面最重要的字段也是session_key(但是这个session_key 不同于上一轮里面的session_key)，用来作为作为下阶段的认证密钥。</p>
+<h2 id="S4U2SELF"><a href="#S4U2SELF" class="headerlink" title="S4U2SELF"></a>S4U2SELF</h2></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://Gu0f3n.github.io">Gu0f3n</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://gu0f3n.github.io/2025/04/15/Windows-Protocol/">https://gu0f3n.github.io/2025/04/15/Windows-Protocol/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://Gu0f3n.github.io" target="_blank">Gu0f3n's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/network/">network</a></div><div class="post_share"><div class="social-share" data-image="https://raw.githubusercontent.com/Gu0f3n/img/mian/6401.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2025/04/24/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E4%B8%8D%E5%AF%84%E5%88%B0%E5%A4%9A%E5%B0%91%E5%A4%A9%E4%BA%86/" title="跟着小迪不寄到多少天了"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(2).jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">跟着小迪不寄到多少天了</div></div></a></div><div class="next-post pull-right"><a href="/2025/04/10/cc3/" title="cc3"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(5).png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">cc3</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2025/04/02/%E5%86%85%E7%BD%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="内网基础知识"><img class="cover" src="https://raw.githubusercontent.com/Gu0f3n/img/mian/6220.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-04-02</div><div class="title">内网基础知识</div></div></a></div><div><a href="/2025/03/21/%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F%E5%88%9D%E6%8E%A2/" title="内网穿透初探"><img class="cover" src="/img/3.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2025-03-21</div><div class="title">内网穿透初探</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/1.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Gu0f3n</div><div class="author-info__description">石匠敲击石头的101次</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">45</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">19</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Gu0f3n?tab=repositories"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Gu0f3n?tab=repositories" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:xxxxxx@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://weibo.com/u/3833024804" target="_blank" title="microblog"><i class="fa-brands fa-microblog" style="color: #FF0000;"></i></a><a class="social-icon" href="https://space.bilibili.com/282616786?spm_id_from=333.337.0.0" target="_blank" title="Bilibili"><i class="fa-brands fa-bilibili" style="color: #FFC0CB;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAA13z3eSKpDESynATlUFIUGCPdSHi7oID9u2rz2bHH6aE" target="_blank" title="tiktok"><i class="fa-brands fa-tiktok" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#kerberos"><span class="toc-number">1.</span> <span class="toc-text">kerberos</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#AS-REP"><span class="toc-number">1.1.</span> <span class="toc-text">AS_REP</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-msg-type"><span class="toc-number">1.1.1.</span> <span class="toc-text">1. msg-type</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-crealm"><span class="toc-number">1.1.2.</span> <span class="toc-text">2. crealm</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-cname"><span class="toc-number">1.1.3.</span> <span class="toc-text">3. cname</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-ticket"><span class="toc-number">1.1.4.</span> <span class="toc-text">4. ticket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-enc-part"><span class="toc-number">1.1.5.</span> <span class="toc-text">5. enc_part</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TGT"><span class="toc-number">1.2.</span> <span class="toc-text">TGT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98"><span class="toc-number">1.3.</span> <span class="toc-text">相关安全问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%93%88%E5%B8%8C%E4%BC%A0%E9%80%92%E6%94%BB%E5%87%BBPass-The-Hash-Key"><span class="toc-number">1.3.1.</span> <span class="toc-text">哈希传递攻击Pass The Hash&#x2F;Key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%90%8D%E6%9E%9A%E4%B8%BE"><span class="toc-number">1.3.2.</span> <span class="toc-text">用户名枚举</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Password-Spraying"><span class="toc-number">1.3.3.</span> <span class="toc-text">Password Spraying</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AS-REPRoasting"><span class="toc-number">1.3.4.</span> <span class="toc-text">AS-REPRoasting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE"><span class="toc-number">1.3.5.</span> <span class="toc-text">黄金票据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TGS-REQ-TGS-REP"><span class="toc-number">1.4.</span> <span class="toc-text">TGS_REQ &amp; TGS_REP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TGS-REQ"><span class="toc-number">1.5.</span> <span class="toc-text">TGS_REQ</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-msg-type-1"><span class="toc-number">1.5.1.</span> <span class="toc-text">1. msg-type</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-PA-DATA"><span class="toc-number">1.5.2.</span> <span class="toc-text">2. PA-DATA</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#REQ-BODY"><span class="toc-number">1.5.3.</span> <span class="toc-text">REQ_BODY</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TGS-REP"><span class="toc-number">1.6.</span> <span class="toc-text">TGS_REP</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-msg-type-2"><span class="toc-number">1.6.1.</span> <span class="toc-text">1. msg-type</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-ticket"><span class="toc-number">1.6.2.</span> <span class="toc-text">2. ticket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-enc-part"><span class="toc-number">1.6.3.</span> <span class="toc-text">3.enc_part</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#S4U2SELF"><span class="toc-number">1.7.</span> <span class="toc-text">S4U2SELF</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/06/10/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E7%BB%93%E5%90%88%E5%86%85%E5%AD%98%E9%A9%AC%E6%B3%A8%E5%85%A5/" title="java反序列化结合内存马注入"><img src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="java反序列化结合内存马注入"/></a><div class="content"><a class="title" href="/2025/06/10/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E7%BB%93%E5%90%88%E5%86%85%E5%AD%98%E9%A9%AC%E6%B3%A8%E5%85%A5/" title="java反序列化结合内存马注入">java反序列化结合内存马注入</a><time datetime="2025-06-10T08:41:25.000Z" title="发表于 2025-06-10 16:41:25">2025-06-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/04/24/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E4%B8%8D%E5%AF%84%E5%88%B0%E5%A4%9A%E5%B0%91%E5%A4%A9%E4%BA%86/" title="跟着小迪不寄到多少天了"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(2).jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="跟着小迪不寄到多少天了"/></a><div class="content"><a class="title" href="/2025/04/24/%E8%B7%9F%E7%9D%80%E5%B0%8F%E8%BF%AA%E4%B8%8D%E5%AF%84%E5%88%B0%E5%A4%9A%E5%B0%91%E5%A4%A9%E4%BA%86/" title="跟着小迪不寄到多少天了">跟着小迪不寄到多少天了</a><time datetime="2025-04-24T11:19:03.000Z" title="发表于 2025-04-24 19:19:03">2025-04-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/04/15/Windows-Protocol/" title="Windows Protocol"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/6401.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Windows Protocol"/></a><div class="content"><a class="title" href="/2025/04/15/Windows-Protocol/" title="Windows Protocol">Windows Protocol</a><time datetime="2025-04-15T11:18:17.000Z" title="发表于 2025-04-15 19:18:17">2025-04-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/04/10/cc3/" title="cc3"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/640%20(5).png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="cc3"/></a><div class="content"><a class="title" href="/2025/04/10/cc3/" title="cc3">cc3</a><time datetime="2025-04-10T11:16:49.000Z" title="发表于 2025-04-10 19:16:49">2025-04-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/04/02/%E5%86%85%E7%BD%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="内网基础知识"><img src="https://raw.githubusercontent.com/Gu0f3n/img/mian/6220.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="内网基础知识"/></a><div class="content"><a class="title" href="/2025/04/02/%E5%86%85%E7%BD%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="内网基础知识">内网基础知识</a><time datetime="2025-04-02T08:41:26.000Z" title="发表于 2025-04-02 16:41:26">2025-04-02</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://raw.githubusercontent.com/Gu0f3n/img/mian/6401.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By Gu0f3n</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"></div><div id="rightside-config-show"><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.14.0-b3"></script><script src="/js/main.js?v=4.14.0-b3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.35/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>(() => {
+  const panguFn = () => {
+    if (typeof pangu === 'object') pangu.autoSpacingPage()
+    else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+        .then(() => {
+          pangu.autoSpacingPage()
+        })
+    }
+  }
+
+  const panguInit = () => {
+    if (false){
+      GLOBAL_CONFIG_SITE.isPost && panguFn()
+    } else {
+      panguFn()
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', panguInit, 'pangu')
+  document.addEventListener('DOMContentLoaded', panguInit)
+})()</script><div class="js-pjax"><script>(() => {
+  const runMermaid = (ele) => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from(ele).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+    
+    codeMermaidEle.forEach(ele => {
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.innerHTML = `<pre class="mermaid-src" hidden>${ele.textContent}</pre>`
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+  
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><div class="aplayer no-destroy" data-id="12384198565" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"> </div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><div class="fb-customerchat" id="fb-customer-chat" attribution="biz_inbox"></div><script>(() => {
+  document.getElementById('fb-root') ? '' : document.body.insertAdjacentHTML('afterend', '<div id="fb-root"></div>')
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      xfbml: true,
+      version: 'v16.0'
+    });
+  };
+
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://connect.facebook.net/zh_CN/sdk/xfbml.customerchat.js';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    window.chatBtnFn = () => {
+      const isShow = document.querySelector('.fb_customer_chat_bounce_in_v2')
+      isShow ? FB.CustomerChat.hide() : FB.CustomerChat.show()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        FB.CustomerChat.hide()
+      },
+      show: () => {
+        FB.CustomerChat.show(false)
+      }
+    }
+  }
+})()</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const loadMeting = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'loadMeting')
+})()</script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+const triggerPjaxFn = (val) => {
+  if (!val) return
+  Object.values(val).forEach(fn => { fn() })
+}
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener
+  btf.removeGlobalFnEvent('pjax')
+  btf.removeGlobalFnEvent('themeChange')
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  triggerPjaxFn(window.globalFn.pjaxSend)
+})
+
+document.addEventListener('pjax:complete', () => {
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  triggerPjaxFn(window.globalFn.pjaxComplete)
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.14.0-b3"></script></div></div></body></html>
